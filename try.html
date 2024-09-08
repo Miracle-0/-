@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互动导览</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="map-container">
+            <img src="ZJU.jpg" alt="建筑平面图" id="map" onmousedown="return false">
+            <!-- 将点位1和点位2的绝对位置使用data-x和data-y进行百分比存储 -->
+            <div class="marker" id="point1" data-x="25" data-y="74">1</div>
+            <div class="marker" id="point2" data-x="45" data-y="53">2</div>
+        </div>
+        
+        <div class="info-container">
+            <!-- 展示当前点位的标题 -->
+            <h2 id="title">请选择一个点位</h2>
+            <!-- 展示建筑图片 -->
+            <img id="image" src="" alt="">
+            <!-- 展示详细信息描述 -->
+            <p id="description">点击地图上的点位查看详细信息。</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
