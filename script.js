@@ -14,65 +14,93 @@ mapElement.setAttribute('draggable', false);
 
 // 更新标记点位置的函数
 function updateMarkersPosition() {
-    // 获取地图的当前尺寸（缩放后的实际尺寸）
+    // 获取缩放后的地图尺寸
     const mapWidth = mapElement.offsetWidth;
     const mapHeight = mapElement.offsetHeight;
 
-    // 获取地图容器的尺寸
-    const containerWidth = mapContainer.offsetWidth;
-    const containerHeight = mapContainer.offsetHeight;
-
     // 遍历每个标记点
     markers.forEach(marker => {
-        // 获取标记点在地图上的原始百分比位置
-        const xPercent = parseFloat(marker.getAttribute('data-x'));  // 横向百分比
-        const yPercent = parseFloat(marker.getAttribute('data-y'));  // 纵向百分比
+        // 获取标记点在地图上的百分比位置
+        const xPercent = parseFloat(marker.getAttribute('data-x'));
+        const yPercent = parseFloat(marker.getAttribute('data-y'));
 
-        // 计算标记点在地图上的实际像素位置（相对缩放后的地图尺寸）
+        // 计算标记点在缩放后地图上的实际像素位置
         let markerX = (xPercent / 100) * mapWidth;
         let markerY = (yPercent / 100) * mapHeight;
 
-        // 计算相对于当前视图窗口的偏移量
-        markerX += currentX;  // 考虑地图拖动的X偏移
-        markerY += currentY;  // 考虑地图拖动的Y偏移
+        // 考虑地图的当前位移
+        markerX += currentX;
+        markerY += currentY;
 
-        // 限制标记点的显示范围，防止超出视口
-        if (markerX >= 0 && markerX <= containerWidth && markerY >= 0 && markerY <= containerHeight) {
-            // 标记点在可见范围内，更新其位置
-            marker.style.left = `${markerX}px`;
-            marker.style.top = `${markerY}px`;
-            marker.style.display = 'block';  // 确保标记点显示
+        // 更新标记点的绝对位置
+        marker.style.left = `${markerX}px`;
+        marker.style.top = `${markerY}px`;
+    });
+}
+
+// 显示或隐藏标记点的函数
+function toggleMarkersVisibility() {
+    markers.forEach(marker => {
+        if (scale === 1) {
+            marker.style.display = 'block';  // 显示标记点
         } else {
-            // 标记点在不可见区域，隐藏它
-            marker.style.display = 'none';
+            marker.style.display = 'none';  // 隐藏标记点
         }
     });
 }
 
+// 地图居中函数，当 scale 为 1 时使用
+function centerMap() {
+    const mapWidth = mapElement.offsetWidth;
+    const mapHeight = mapElement.offsetHeight;
+    const containerWidth = mapContainer.offsetWidth;
+    const containerHeight = mapContainer.offsetHeight;
 
+    // 计算地图初始居中的偏移量
+    currentX = (containerWidth - mapWidth) / 2;
+    currentY = (containerHeight - mapHeight) / 2;
+
+    // 应用居中位移
+    mapElement.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
+
+    // 更新标记点位置并检查可见性
+    updateMarkersPosition();
+    toggleMarkersVisibility();
+}
+
+// 初始状态时地图居中
+window.addEventListener('load', centerMap);
 
 // 处理地图的缩放
 mapElement.addEventListener('wheel', function(event) {
     event.preventDefault();
-    const scaleStep = 0.1;  // 每次缩放的步长
+    const scaleStep = 0.1;  // 缩放的步长
     const oldScale = scale;  // 缓存缩放前的比例
 
+    // 根据鼠标滚轮调整缩放
     if (event.deltaY < 0) {
         scale = Math.min(scale + scaleStep, 3);  // 最大放大到3倍
     } else {
-        scale = Math.max(scale - scaleStep, 1);  // 最小缩小到原图比例
+        scale = Math.max(scale - scaleStep, 1);  // 最小缩小到原始大小
     }
 
-    // 更新位移以保持地图中心不发生明显变化
+    // 获取当前鼠标位置，计算缩放中心的偏移
     const rect = mapElement.getBoundingClientRect();
     const offsetX = (event.clientX - rect.left) * (1 - oldScale / scale);
     const offsetY = (event.clientY - rect.top) * (1 - oldScale / scale);
 
+    // 更新位移，保持缩放时的地图中心不变化
     currentX -= offsetX;
     currentY -= offsetY;
 
-    // 应用缩放和位移
-    mapElement.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
+    // 当缩放比例为 1 时，将地图居中
+    if (scale === 1) {
+        centerMap();
+    } else {
+        // 否则更新缩放和位移
+        mapElement.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
+        toggleMarkersVisibility();
+    }
 
     // 更新标记点位置
     updateMarkersPosition();
@@ -93,14 +121,15 @@ document.addEventListener('mousemove', function(event) {
         let newX = event.clientX - startX;
         let newY = event.clientY - startY;
 
-        // 限制地图不能拖动超出容器边界
+        // 限制地图拖动的范围，确保地图不会超出视口范围
         const maxX = (containerRect.width * (scale - 1)) / 2;
         const maxY = (containerRect.height * (scale - 1)) / 2;
 
+        // 确保位移不会超过设定范围
         newX = Math.max(-maxX, Math.min(newX, maxX));
         newY = Math.max(-maxY, Math.min(newY, maxY));
 
-        // 更新当前位移并应用变换
+        // 更新当前位移并应用
         currentX = newX;
         currentY = newY;
         mapElement.style.transform = `translate(${currentX}px, ${currentY}px) scale(${scale})`;
@@ -128,14 +157,16 @@ document.addEventListener('mouseleave', function() {
 updateMarkersPosition();
 
 // 处理标记点点击事件
-document.getElementById('point1').addEventListener('click', function() {
-    document.getElementById('title').innerText = "南大门";
-    changeImage("south.jpg", "这是建筑点位1的详细信息。");
-});
+markers.forEach(marker => {
+    marker.addEventListener('click', function() {
+        const pointId = this.id;
+        const title = pointId === 'point1' ? '南大门' : '主图书馆';
+        const imageSrc = pointId === 'point1' ? 'south.jpg' : 'library.jpg';
+        const description = pointId === 'point1' ? '这是建筑点位1的详细信息。' : '这是建筑点位2的详细信息。';
 
-document.getElementById('point2').addEventListener('click', function() {
-    document.getElementById('title').innerText = "主图书馆";
-    changeImage("library.jpg", "这是建筑点位2的详细信息。");
+        document.getElementById('title').innerText = title;
+        changeImage(imageSrc, description);
+    });
 });
 
 // 图片切换函数，带有淡入淡出效果
