@@ -1,0 +1,71 @@
+/* 设置页面字体、背景颜色和边距 */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+/* 设置主要容器的布局，采用flex布局方式，将地图和信息部分横向排列 */
+.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+/* 地图容器宽度设置为页面的100% */
+.map-container {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+/* 地图图片宽度占满容器，并禁用默认的选择和拖拽行为 */
+.map-container img {
+    width: 100%;  /* 地图的宽度自适应父容器 */
+    height: auto;  /* 保持图片的宽高比 */
+    user-select: none;  /* 禁用图片的选中行为 */
+    
+}
+
+/* 点位标记的基础样式，设置位置、大小、颜色、对齐方式等 */
+.marker {
+    position: absolute; /* 使用绝对定位，确保标记位置正确 */
+    width: 30px;
+    height: 30px;
+    background-color: red;
+    color: white;
+    text-align: center;
+    line-height: 30px; /* 水平垂直居中显示数字 */
+    border-radius: 50%; /* 圆形按钮 */
+    cursor: pointer; /* 鼠标悬停时显示为手型 */
+    transition: transform 0.2s; /* 鼠标悬停时按钮有缩放动画 */
+}
+
+/* 当鼠标悬停在点位标记上时，放大图标 */
+.marker:hover {
+    transform: scale(1.2);
+}
+
+/* 信息容器的样式，设置宽度、背景颜色和内边距 */
+.info-container {
+    width: 45%;
+    background-color: white;
+    padding: 20px;
+    border: 2px solid #ccc;
+}
+
+/* 图片在信息容器中的样式，最大宽度100%，确保图片自适应 */
+.info-container img {
+    max-width: 100%;
+    margin-bottom: 10px;
+    display: block;   /* 确保图片可见 */
+    opacity: 1;       /* 图片不透明，确保可见 */
+    transition: opacity 1s ease-in-out; /* 添加透明度过渡效果，切换时淡入淡出 */
+}
+
+/* 当图片显示时，透明度为1 */
+.fade {
+    opacity: 1;
+}
